@@ -22,13 +22,32 @@ Installation
 Configuration
 -------------
 
-1. Configure Action
+As a Zabbix Admin user...
 
-Name: `Forward to Alerta`
-Default `Subject: {TRIGGER.STATUS}: {TRIGGER.NAME}`
+1. Create a new media type [Admininstration > Media Types > Create Media Type]
 
-Default Message:
 ```
+Description: alerta
+Type: Script
+Script name: zabbix_alerta.py
+```
+
+2. Create an interface and add media [Administration > Users > Create User]
+
+```
+Type: alerta
+Send to: http://x.x.x.x:8080         <--- API hostname/IP and port
+```
+
+3. Configure Action [Configuration > Actions > Create Action > Action]
+
+```
+Name: Forward to Alerta
+Default Subject: {TRIGGER.STATUS}: {TRIGGER.NAME}
+```
+
+```
+Default Message:
 resource={HOST.NAME1}
 event={ITEM.KEY1}
 group=Zabbix
@@ -45,6 +64,24 @@ thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
 moreInfo={TRIGGER.DESCRIPTION}
 ```
 
+To send OK events ...
+
+````
+Recovery message: [check]
+````
+
+To only forward PROBLEM and OK events ...
+
+```
+(A)	Maintenance status not in "maintenance" 
+(B)	Trigger value = "PROBLEM" 
+```
+
+To forward PROBLEM, ACKNOWLEDGED, OK events ...
+
+```
+(A)	Maintenance status not in "maintenance" 
+```
 
 License
 -------
