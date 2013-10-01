@@ -36,7 +36,7 @@ Script name: zabbix_alerta.py
 
 ```
 Type: alerta
-Send to: http://x.x.x.x:8080         <--- API hostname/IP and port
+Send to: http://x.x.x.x:8080         <--- API hostname/IP and port of alerta server
 ```
 
 3. Configure Action [Configuration > Actions > Create Action > Action]
