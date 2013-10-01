@@ -24,7 +24,7 @@ Configuration
 
 As a Zabbix Admin user...
 
-1. Create a new media type [Admininstration > Media Types > Create Media Type]
+1/ Create a new media type [Admininstration > Media Types > Create Media Type]
 
 ```
 Description: alerta
@@ -32,14 +32,14 @@ Type: Script
 Script name: zabbix_alerta.py
 ```
 
-2. Create an interface and add media [Administration > Users > Create User]
+2/ Create an interface and add media [Administration > Users > Create User]
 
 ```
 Type: alerta
 Send to: http://x.x.x.x:8080         <--- API hostname/IP and port of alerta server
 ```
 
-3. Configure Action [Configuration > Actions > Create Action > Action]
+3/ Configure Action [Configuration > Actions > Create Action > Action]
 
 ```
 Name: Forward to Alerta
