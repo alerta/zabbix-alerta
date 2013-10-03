@@ -8,7 +8,7 @@ import urllib2
 
 import logging as LOG
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 _DEFAULT_LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -56,14 +56,19 @@ def main():
         if macro in ['environment', 'service', 'tags']:
             value = value.split(',')
         if macro == 'severity':
-            value = ZBX_SEVERITY_MAP.get(value, 'notValid')
-        LOG.debug('%s -> %s', macro, value)
+            value = ZBX_SEVERITY_MAP.get(value, 'unknown')
 
         alert[macro] = value
+        LOG.debug('%s -> %s', macro, value)
 
     if 'status' in alert and alert['status'] == 'OK':
         alert['severity'] = 'normal'
         del alert['status']
+
+    if 'ack' in alert:
+        if alert['ack'] == 'Yes':
+            alert['status'] = 'ack'
+        del alert['ack']
 
     LOG.info(alert)
 
@@ -110,3 +115,4 @@ if __name__ == '__main__':
 
     LOG.basicConfig(filename="/var/log/zabbix/zabbix_alerta.log", format=_DEFAULT_LOG_FORMAT, datefmt=_DEFAULT_LOG_DATE_FORMAT, level=LOG.DEBUG)
     main()
+
