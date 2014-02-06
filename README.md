@@ -14,31 +14,33 @@ Into this ...
 Installation
 ------------
 
-Copy the `zabbix_alerta.py` script into the `AlertScriptsPath` directory which is by default `/usr/local/share/zabbix/alertscripts` and make it executable:
+Copy the `zabbix_alerta.py` script into the `AlertScriptsPath` directory which is by default `/usr/lib/zabbix/alertscripts` and make it executable:
 
-    $ cp zabbix_alerta.py /usr/share/zabbix/alertscripts
-    $ cd /usr/share/zabbix/alertscripts
-    $ chmod +x zabbix_alerta.py
-    $ chown zabbix:users zabbix_alerta.py
+    $ wget https://raw.github.com/alerta/zabbix-alerta/master/zabbix_alerta.py
+    $ cp zabbix_alerta.py /usr/lib/zabbix/alertscripts
+    $ chmod 755 /usr/lib/zabbix/alertscripts/zabbix_alerta.py
 
 Configuration
 -------------
 
-As a Zabbix Admin user...
+To forward zabbix events to Alerta a new media script needs to be created and associated with a user. Follow the steps below as a Zabbix Admin user...
 
 1/ Create a new media type [Admininstration > Media Types > Create Media Type]
 
 ```
-Description: alerta
+Name: Alerta API
 Type: Script
 Script name: zabbix_alerta.py
 ```
 
-2/ Create an interface and add media [Administration > Users > Create User]
+2/ Modify the Media for the Admin user [Administration > Users]
 
 ```
 Type: alerta
 Send to: http://x.x.x.x:8080         <--- API hostname/IP and port of alerta server
+When active: 1-7,00:00-24:00
+Use if severity: (all)
+Status: Enabled
 ```
 
 3/ Configure Action [Configuration > Actions > Create Action > Action]
@@ -50,6 +52,7 @@ Default Subject: {TRIGGER.STATUS}: {TRIGGER.NAME}
 
 ```
 Default Message:
+
 resource={HOST.NAME1}
 event={ITEM.KEY1}
 group=Zabbix
@@ -61,7 +64,7 @@ environment=INFRA
 service={TRIGGER.HOSTGROUP.NAME}
 text={TRIGGER.NAME}
 type=zabbixAlert
-tags=ipaddr={HOST.IP1}
+tags=ipaddr={HOST.IP1},id={TRIGGER.ID},event_id={EVENT.ID}
 thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
 moreInfo={TRIGGER.DESCRIPTION}
 ```
@@ -72,9 +75,10 @@ To send OK events ...
 
 ````
 Recovery message: [check]
+Enabled [check]
 ````
 
-To only forward PROBLEM and OK events ...
+At the Conditions tab, to only forward PROBLEM and OK events ...
 
 ```
 (A)	Maintenance status not in "maintenance" 
@@ -87,9 +91,12 @@ To forward PROBLEM, ACKNOWLEDGED, OK events ...
 (A)	Maintenance status not in "maintenance" 
 ```
 
-Add operation:
+Finally, add an operation:
 
-
+```
+Send to Users: Admin
+Send only to: Alerta API
+```
 
 License
 -------
