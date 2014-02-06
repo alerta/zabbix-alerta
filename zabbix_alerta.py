@@ -8,7 +8,7 @@ import urllib2
 
 import logging as LOG
 
-__version__ = '0.2'
+__version__ = '0.2.1'
 
 _DEFAULT_LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -53,10 +53,12 @@ def main():
             LOG.warning('%s: %s', e, line)
             continue
 
-        if macro in ['environment', 'service', 'tags']:
-            value = value.split(',')
+        if macro in ['environment', 'service']:
+            value = value.split(', ')
         if macro == 'severity':
             value = ZBX_SEVERITY_MAP.get(value, 'unknown')
+        if macro == 'tags':
+            value = dict([tag.split('=') for tag in value.split(',')])
 
         alert[macro] = value
         LOG.debug('%s -> %s', macro, value)
