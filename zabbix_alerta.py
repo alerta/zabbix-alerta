@@ -8,7 +8,7 @@ import urllib2
 
 import logging as LOG
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 _DEFAULT_LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -63,8 +63,9 @@ def main():
         alert[macro] = value
         LOG.debug('%s -> %s', macro, value)
 
-    if 'status' in alert and alert['status'] == 'OK':
-        alert['severity'] = 'normal'
+    if 'status' in alert:
+        if alert['status'] == 'OK':
+            alert['severity'] = 'normal'
         del alert['status']
 
     if 'ack' in alert:
