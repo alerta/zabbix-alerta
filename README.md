@@ -1,7 +1,7 @@
 Zabbix-Alerta Gateway
 =====================
 
-Consolidate Zabbix alerts from across multiple sites into a single "at-a-glance" console.
+Consolidate Zabbix alerts from across multiple sites into a single "at-a-glance" console by using a custom Zabbix [alertscript](https://www.zabbix.com/documentation/2.2/manual/config/notifications/media/script).
 
 Transform this ...
 
@@ -13,6 +13,8 @@ Into this ...
 
 Installation
 ------------
+
+Copy the `zabbix_alerta.py` script into the `AlertScriptsPath` directory which is by default `/usr/local/share/zabbix/alertscripts` and make it executable:
 
     $ cp zabbix_alerta.py /usr/share/zabbix/alertscripts
     $ cd /usr/share/zabbix/alertscripts
@@ -59,10 +61,12 @@ environment=INFRA
 service={TRIGGER.HOSTGROUP.NAME}
 text={TRIGGER.NAME}
 type=zabbixAlert
-tags=ipaddr:{HOST.IP1}
+tags=ipaddr={HOST.IP1}
 thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
 moreInfo={TRIGGER.DESCRIPTION}
 ```
+
+For a full list of trigger macros see https://www.zabbix.com/documentation/2.2/manual/appendix/macros/supported_by_location
 
 To send OK events ...
 
@@ -82,6 +86,10 @@ To forward PROBLEM, ACKNOWLEDGED, OK events ...
 ```
 (A)	Maintenance status not in "maintenance" 
 ```
+
+Add operation:
+
+
 
 License
 -------
