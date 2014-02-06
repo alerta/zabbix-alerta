@@ -98,6 +98,13 @@ Send to Users: Admin
 Send only to: Alerta API
 ```
 
+More Information
+----------------
+
+See the [PagerDuty guide to configuring Zabbix integrations][1] for an alertnative explanation with screenshots.
+
+[1]: <http://www.pagerduty.com/docs/guides/zabbix-integration-guide/> "PagerDuty Zabbix Integration Guide"
+
 License
 -------
 
