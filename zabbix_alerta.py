@@ -8,7 +8,7 @@ import urllib2
 
 import logging as LOG
 
-__version__ = '0.2.2'
+__version__ = '3.0.0'
 
 _DEFAULT_LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -37,7 +37,7 @@ def main():
     LOG.debug(args.summary)
     LOG.debug(args.body)
 
-    api_url = "%s/alerta/api/v2/alerts/alert.json" % args.endpoint
+    api_url = "%s/api/alert" % args.endpoint
 
     alert = dict()
     alert['summary'] = args.summary
@@ -53,7 +53,7 @@ def main():
             LOG.warning('%s: %s', e, line)
             continue
 
-        if macro in ['environment', 'service']:
+        if macro == 'service':
             value = value.split(', ')
         if macro == 'severity':
             value = ZBX_SEVERITY_MAP.get(value, 'unknown')

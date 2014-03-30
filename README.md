@@ -60,13 +60,12 @@ value={ITEM.VALUE1}
 status={TRIGGER.STATUS}
 severity={TRIGGER.SEVERITY}
 ack={EVENT.ACK.STATUS}
-environment=INFRA
+environment=infrastructure
 service={TRIGGER.HOSTGROUP.NAME}
 text={TRIGGER.NAME}
 type=zabbixAlert
 tags=ipaddr={HOST.IP1},id={TRIGGER.ID},event_id={EVENT.ID}
 thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
-moreInfo={TRIGGER.DESCRIPTION}
 ```
 
 For a full list of trigger macros see https://www.zabbix.com/documentation/2.2/manual/appendix/macros/supported_by_location
