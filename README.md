@@ -5,11 +5,11 @@ Consolidate Zabbix alerts from across multiple sites into a single "at-a-glance"
 
 Transform this ...
 
-![zabbix](/docs/images/zabbix.png?raw=true)
+![zabbix](/docs/images/zabbix22.png?raw=true)
 
 Into this ...
 
-![alerta](/docs/images/alerta.png?raw=true)
+![alerta](/docs/images/zabbix22-alerta-v3.png?raw=true)
 
 Installation
 ------------
