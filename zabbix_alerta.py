@@ -14,7 +14,7 @@ LOG_FILE = '/var/log/zabbix/zabbix_alerta.log'
 LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
 LOG_DATE_FMT = "%Y-%m-%d %H:%M:%S"
 
-debug = False
+debug = True
 
 ZBX_SEVERITY_MAP = {
     'Disaster':       'critical',
@@ -64,8 +64,9 @@ def main():
             value = ZBX_SEVERITY_MAP.get(value, 'unknown')
         if macro == 'tags':
             value = value.split(',')
-        if macro == 'attributes':
-            value = dict([attrs.split('=', 1) for attrs in value.split(',')])
+        if macro == 'thresholdInfo':
+            macro = 'attributes'
+            value = {'thresholdInfo': value}
 
         alert[macro] = value
         LOG.debug('%s -> %s', macro, value)
