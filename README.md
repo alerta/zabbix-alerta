@@ -65,7 +65,7 @@ service={TRIGGER.HOSTGROUP.NAME}
 text={TRIGGER.NAME}
 type=zabbixAlert
 tags=ipaddr={HOST.IP1},id={TRIGGER.ID},event_id={EVENT.ID}
-attributes=thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
+thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
 ```
 
 For a full list of trigger macros see https://www.zabbix.com/documentation/2.2/manual/appendix/macros/supported_by_location
