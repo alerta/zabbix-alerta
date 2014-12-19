@@ -4,16 +4,17 @@ import os
 import sys
 import argparse
 import json
-import urllib2
+import requests
 
 import logging as LOG
 
-__version__ = '3.0.0'
+__version__ = '3.1.0'
 
-_DEFAULT_LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
-_DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+LOG_FILE = '/var/log/zabbix/zabbix_alerta.log'
+LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
+LOG_DATE_FMT = "%Y-%m-%d %H:%M:%S"
 
-dry_run = False
+debug = False
 
 ZBX_SEVERITY_MAP = {
     'Disaster':       'critical',
@@ -28,16 +29,20 @@ ZBX_SEVERITY_MAP = {
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("endpoint", help="alerta API URL endpoint")
+    parser.add_argument("sendto", help="alerta API endpoint and key")
     parser.add_argument("summary", help="alert summary")
     parser.add_argument("body", help="alert body")
     args = parser.parse_args()
 
-    LOG.debug(args.endpoint)
-    LOG.debug(args.summary)
-    LOG.debug(args.body)
+    LOG.debug("[alerta] sendto=%s, summary=%s, body=%s", args.sendto, args.summary, args.body)
 
-    api_url = "%s/api/alert" % args.endpoint
+    if ';' in args.sendto:
+        endpoint, key = args.sendto.split(';')
+    else:
+        endpoint = args.sendto
+        key = None
+
+    url = "%s/alert" % endpoint
 
     alert = dict()
     alert['summary'] = args.summary
@@ -58,7 +63,9 @@ def main():
         if macro == 'severity':
             value = ZBX_SEVERITY_MAP.get(value, 'unknown')
         if macro == 'tags':
-            value = dict([tag.split('=') for tag in value.split(',')])
+            value = value.split(',')
+        if macro == 'attributes':
+            value = dict([attrs.split('=', 1) for attrs in value.split(',')])
 
         alert[macro] = value
         LOG.debug('%s -> %s', macro, value)
@@ -73,49 +80,24 @@ def main():
             alert['status'] = 'ack'
         del alert['ack']
 
-    LOG.info(alert)
+    LOG.info("[alerta] alert=%s", alert)
 
-    post = json.dumps(alert, ensure_ascii=False)
     headers = {'Content-Type': 'application/json'}
-
-    request = urllib2.Request(api_url, headers=headers)
-    request.add_data(post)
-    LOG.debug('url=%s, data=%s, headers=%s', request.get_full_url(), request.data, request.headers)
-
-    if dry_run:
-        print "curl '%s' -H 'Content-Type: application/json' -d '%s'" % (api_url, post)
-        sys.exit(0)
-
-    LOG.debug('Sending alert to API endpoint...')
-    try:
-        response = urllib2.urlopen(request, post, 15)
-    except ValueError, e:
-        LOG.error('Could not send alert to API endpoint %s : %s', api_url, e)
-        sys.exit(1)
-    except urllib2.URLError, e:
-        if hasattr(e, 'reason'):
-            error = str(e.reason)
-        elif hasattr(e, 'code'):
-            error = e.code
-        else:
-            error = 'Unknown Send Error'
-        LOG.error('Could not send to API endpoint %s : %s', api_url, error)
-        sys.exit(2)
-    else:
-        code = response.getcode()
-    LOG.info('Alert sent to API endpoint %s : status=%s', api_url, code)
+    if key:
+        headers['Authorization'] = 'Key ' + key
 
     try:
-        data = json.loads(response.read())
-    except Exception, e:
-        LOG.error('Error with response from API endpoint %s : %s', api_url, e)
-        sys.exit(3)
+        response = requests.post(url, data=json.dumps(alert), headers=headers, timeout=2)
+    except Exception as e:
+        raise RuntimeError("[alerta] Connection error: %s", e)
 
-    LOG.debug('Response from API endpoint: %s', data)
-
+    LOG.debug('[alerta] API response: %s - %s', response.status_code, response.json())
 
 if __name__ == '__main__':
 
-    LOG.basicConfig(filename="/var/log/zabbix/zabbix_alerta.log", format=_DEFAULT_LOG_FORMAT, datefmt=_DEFAULT_LOG_DATE_FORMAT, level=LOG.DEBUG)
-    main()
+    if debug:
+        LOG.basicConfig(stream=sys.stderr, format=LOG_FORMAT, datefmt=LOG_DATE_FMT, level=LOG.DEBUG)
+    else:
+        LOG.basicConfig(filename=LOG_FILE, format=LOG_FORMAT, datefmt=LOG_DATE_FMT, level=LOG.DEBUG)
 
+    main()

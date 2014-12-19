@@ -60,12 +60,12 @@ value={ITEM.VALUE1}
 status={TRIGGER.STATUS}
 severity={TRIGGER.SEVERITY}
 ack={EVENT.ACK.STATUS}
-environment=infrastructure
+environment=Production
 service={TRIGGER.HOSTGROUP.NAME}
 text={TRIGGER.NAME}
 type=zabbixAlert
 tags=ipaddr={HOST.IP1},id={TRIGGER.ID},event_id={EVENT.ID}
-thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
+attributes=thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
 ```
 
 For a full list of trigger macros see https://www.zabbix.com/documentation/2.2/manual/appendix/macros/supported_by_location
@@ -107,5 +107,4 @@ See the [PagerDuty guide to configuring Zabbix integrations][1] for an alertnati
 License
 -------
 
-Copyright (c) 2013 Nick Satterly. Available under the MIT License.
-
+Copyright (c) 2014 Nick Satterly. Available under the MIT License.
