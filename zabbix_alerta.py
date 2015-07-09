@@ -14,7 +14,7 @@ LOG_FILE = '/var/log/zabbix/zabbix_alerta.log'
 LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
 LOG_DATE_FMT = "%Y-%m-%d %H:%M:%S"
 
-debug = True
+debug = False
 
 ZBX_SEVERITY_MAP = {
     'Disaster':       'critical',
