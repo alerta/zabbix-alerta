@@ -5,11 +5,11 @@ Consolidate Zabbix alerts from across multiple sites into a single "at-a-glance"
 
 Transform this ...
 
-![zabbix](/docs/images/zabbix22.png?raw=true)
+![zabbix](/docs/images/zabbix-alerta-before.png?raw=true)
 
 Into this ...
 
-![alerta](/docs/images/zabbix22-alerta-v3.png?raw=true)
+![alerta](/docs/images/zabbix-alerta-after.png?raw=true)
 
 Installation
 ------------
@@ -80,14 +80,14 @@ Enabled [check]
 At the Conditions tab, to only forward PROBLEM and OK events ...
 
 ```
-(A)	Maintenance status not in "maintenance" 
-(B)	Trigger value = "PROBLEM" 
+(A)	Maintenance status not in "maintenance"
+(B)	Trigger value = "PROBLEM"
 ```
 
 To forward PROBLEM, ACKNOWLEDGED, OK events ...
 
 ```
-(A)	Maintenance status not in "maintenance" 
+(A)	Maintenance status not in "maintenance"
 ```
 
 Finally, add an operation:
