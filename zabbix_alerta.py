@@ -53,7 +53,7 @@ def main():
         if '=' not in line:
             continue
         try:
-            macro, value = line.split('=', 1)
+            macro, value = line.rstrip().split('=', 1)
         except ValueError, e:
             LOG.warning('%s: %s', e, line)
             continue
