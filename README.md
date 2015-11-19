@@ -42,6 +42,7 @@ When active: 1-7,00:00-24:00
 Use if severity: (all)
 Status: Enabled
 ```
+**Note:** If API authentication is enabled then an API key will need to be specified in the `Send to` configuration. The API key is added after the API endpoint separated only by a semicolon. eg. `http://x.x.x.x;YOUR_API_KEY_HERE`
 
 3/ Configure Action [Configuration > Actions > Create Action > Action]
 
