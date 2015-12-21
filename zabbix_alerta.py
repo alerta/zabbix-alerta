@@ -60,11 +60,11 @@ def main():
 
         if macro == 'service':
             value = value.split(', ')
-        if macro == 'severity':
+        elif macro == 'severity':
             value = ZBX_SEVERITY_MAP.get(value, 'unknown')
-        if macro == 'tags':
+        elif macro == 'tags':
             value = value.split(',')
-        if macro == 'thresholdInfo':
+        elif macro == 'thresholdInfo':
             macro = 'attributes'
             value = {'thresholdInfo': value}
 
