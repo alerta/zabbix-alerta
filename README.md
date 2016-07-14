@@ -31,6 +31,10 @@ To forward zabbix events to Alerta a new media script needs to be created and as
 Name: Alerta API
 Type: Script
 Script name: zabbix_alerta.py
+Script parameters: 
+    1st: {ALERT.SENDTO}
+    2nd: {ALERT.SUBJECT}
+    3rd: {ALERT.MESSAGE}
 ```
 
 2/ Modify the Media for the Admin user [Administration > Users]
