@@ -23,7 +23,7 @@ Clone the GitHub repo and run:
 
 Or, to install remotely from GitHub run:
 
-    $ pip install git+https://github.com/alerta/alerta-contrib.git#subdirectory=plugins/hipchat
+    $ pip install git+https://github.com/alerta/zabbix-alerta
 
 Then symlink the `zabbix-alerta` script to the `AlertScriptsPath` directory
 which is defined in `/etc/zabbix/zabbix_server.conf` but is either `/usr/local/share/zabbix/alertscripts` or `/usr/lib/zabbix/alertscripts`:
