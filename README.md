@@ -26,9 +26,11 @@ Or, to install remotely from GitHub run:
     $ pip install git+https://github.com/alerta/zabbix-alerta
 
 Then symlink the `zabbix-alerta` script to the `AlertScriptsPath` directory
-which is defined in `/etc/zabbix/zabbix_server.conf` but is either `/usr/local/share/zabbix/alertscripts` or `/usr/lib/zabbix/alertscripts`:
+which can be found in the `/etc/zabbix/zabbix_server.conf` configuration file:
 
-    $ ln -s `which zabbix-alerta` /usr/lib/zabbix/alertscripts
+    $ grep -e '^AlertScriptsPath' /etc/zabbix/zabbix_server.conf
+    AlertScriptsPath=/path/to/zabbix/alertscripts
+    $ ln -s `which zabbix-alerta` /path/to/zabbix/alertscripts
 
 Configuration
 -------------
