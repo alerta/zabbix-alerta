@@ -38,3 +38,5 @@ nosetests.xml
 TODO
 *.log
 
+.DS_Store
+
