@@ -214,7 +214,7 @@ template group or global level using the `{$ENVIRONMENT}` macro.
 Alerta can display alerts using the Zabbix standard severity names and
 colours and sorted correctly by priority.
 
-Zabbix uses the following severity hieararchy:
+Zabbix uses the following severity hierarchy:
 
     Numerical trigger severity. Possible values:
     0 - Not classified,
@@ -298,11 +298,11 @@ that triggered the alert add:
 
 ACTION:
 
-attributes.moreInfo=<a href="http://x.x.x.x/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}">Zabbix console</a>
+attributes.moreInfo=\<a href="http://x.x.x.x/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}">Zabbix console</a\>
 
 RECOVERY
 
-attributes.moreInfo=<a href="http://x.x.x.x/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}">Zabbix console</a>
+attributes.moreInfo=\<a href="http://x.x.x.x/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}">Zabbix console</a\>
 
 Troubleshooting
 ---------------
