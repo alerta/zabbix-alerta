@@ -16,7 +16,7 @@ except ImportError:
 from alertaclient.api import ApiClient
 from alertaclient.alert import Alert
 
-__version__ = '3.2.0'
+__version__ = '3.2.1'
 
 LOG_FILE = '/var/log/zabbix/zabbix_alerta.log'
 LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
@@ -210,7 +210,7 @@ def main():
     parser.set_defaults(**OPTIONS)
     args = parser.parse_args()
 
-    if args.debug:
+    if args.debug or not os.path.isdir('/var/log/zabbix'):
         LOG.basicConfig(stream=sys.stderr, format=LOG_FORMAT, datefmt=LOG_DATE_FMT, level=LOG.DEBUG)
     else:
         LOG.basicConfig(filename=LOG_FILE, format=LOG_FORMAT, datefmt=LOG_DATE_FMT, level=LOG.INFO)
