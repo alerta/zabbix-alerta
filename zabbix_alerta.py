@@ -16,7 +16,7 @@ except ImportError:
 from alertaclient.api import ApiClient
 from alertaclient.alert import Alert
 
-__version__ = '3.2.1'
+__version__ = '3.4.0'
 
 LOG_FILE = '/var/log/zabbix/zabbix_alerta.log'
 LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
@@ -230,5 +230,4 @@ def main():
         sys.exit(1)
 
 if __name__ == '__main__':
-
     main()
