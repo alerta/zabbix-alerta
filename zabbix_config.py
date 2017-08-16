@@ -8,6 +8,7 @@ import sys
 import time
 import logging
 import argparse
+import getpass
 import protobix
 
 from datetime import datetime
@@ -33,11 +34,15 @@ OPTIONS = {
     'debug':       False
 }
 
-epilog = """NOTE
+epilog = """Note
 
   To use zabbix severity levels you must update the Alerta server
   and web config files as well. See online documentation for more info
   https://github.com/alerta/zabbix-alerta#advanced-configuration
+
+Example
+
+  $ zac --server http://zabbix-web --trapper zabbix-server http://alerta/api
 
 """
 
@@ -110,7 +115,7 @@ class ZabbixConfig(object):
         self.item_id = None
         self.trigger_id = None
 
-    def create_action(self, sendto, use_zabbix_severity=False):
+    def create_action(self, sendto, web_url, use_zabbix_severity=False):
 
         use_console_link = True
 
@@ -168,7 +173,7 @@ class ZabbixConfig(object):
             "dateTime={EVENT.DATE}T{EVENT.TIME}Z\r\n"
         )
 
-        operations_console_link = 'attributes.moreInfo=<a href="%s/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}" target="_blank">Zabbix console</a>' % 'foo'  # fixme
+        operations_console_link = 'attributes.moreInfo=<a href="%s/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}" target="_blank">Zabbix console</a>' % web_url
         operations = {
             "operationtype": SEND_MESSAGE,
             "opmessage": {
@@ -184,7 +189,7 @@ class ZabbixConfig(object):
             ]
         }
 
-        recovery_console_link = 'attributes.moreInfo=<a href="%s/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}" target="_blank">Zabbix console</a>' % 'foo'  # fixme
+        recovery_console_link = 'attributes.moreInfo=<a href="%s/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}" target="_blank">Zabbix console</a>' % web_url
         recovery_operations = {
             "operationtype": SEND_MESSAGE,
             "opmessage": {
@@ -356,28 +361,29 @@ def main():
     parser.add_argument(
         '--user',
         default='Admin',
-        help='Zabbix admin user (default: Admin)'
+        help='Zabbix admin user (default: "Admin")'
     )
     parser.add_argument(
-        '--password',
-        default='zabbix',
-        help='Password for admin (default: zabbix)'
+        '--no-password',
+        '-w',
+        action='store_true',
+        help='do not prompt for password (default: "zabbix")'
     )
     parser.add_argument(
         '--trapper',
         default='localhost',
-        help='Zabbix trapper host, used for testing'
+        help='Zabbix trapper host (default: localhost)'
     )
     parser.add_argument(
         '--zabbix-severity',
         '-Z',
         action='store_true',
-        help='Use Zabbix severity levels'
+        help='use Zabbix severity levels'
     )
     parser.add_argument(
         '--debug',
         action='store_true',
-        help='Print debug output'
+        help='print debug output'
     )
     parser.add_argument(
         'sendto',
@@ -420,16 +426,27 @@ def main():
         log.addHandler(stream)
         log.setLevel(logging.DEBUG)
 
-    zc = ZabbixConfig(args.server, args.user, args.password)
+    if args.no_password:
+        password = 'zabbix'  # default for 'Admin'
+    else:
+        password = getpass.getpass()
 
-    # configure action
-    zc.create_action(args.sendto, args.zabbix_severity)
+    try:
+        zc = ZabbixConfig(args.server, args.user, password)
 
-    # test action
-    zc.test_action(args.trapper, args.endpoint, args.key)
+        # configure action
+        zc.create_action(args.sendto, args.server, args.zabbix_severity)
 
-    # clean up ?
-    #zc.clean_up()
+        # test action
+        zc.test_action(args.trapper, args.endpoint, args.key)
+
+        # clean up ?
+        #zc.clean_up()
+
+    except (SystemExit, KeyboardInterrupt):
+        sys.exit(0)
+    except Exception as e:
+        sys.exit(e)
 
 if __name__ == '__main__':
     main()
