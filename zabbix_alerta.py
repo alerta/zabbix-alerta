@@ -132,18 +132,16 @@ def parse_zabbix(subject, message, **kwargs):
     if alert['environment'] == '{$ENVIRONMENT}':
         alert['environment'] = 'Production'
 
-    if 'status' in alert:
-        if alert['status'].startswith('OK'):
-            if zabbix_severity:
-                alert['severity'] = 'ok'
-            else:
-                alert['severity'] = 'normal'
-        del alert['status']
+    zabbix_status = alert.pop('status', None)
 
-    if 'ack' in alert:
-        if alert['ack'] == 'Yes':
-            alert['status'] = 'ack'
-        del alert['ack']
+    if zabbix_status == 'OK':
+        if zabbix_severity:
+            alert['severity'] = 'ok'
+        else:
+            alert['severity'] = 'normal'
+
+    if alert.pop('ack', '') == 'Yes' and zabbix_status != 'OK':
+        alert['status'] = 'ack'
 
     alert['attributes'] = attributes
     alert['origin'] = "zabbix/%s" % os.uname()[1]
