@@ -13,8 +13,8 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from alertaclient.api import ApiClient
-from alertaclient.alert import Alert
+from alertaclient.api import Client
+from alertaclient.models.alert import Alert
 
 __version__ = '3.4.0'
 
@@ -147,7 +147,7 @@ def parse_zabbix(subject, message, **kwargs):
     alert['origin'] = "zabbix/%s" % os.uname()[1]
     alert['rawData'] = "%s\n\n%s" % (subject, message)
 
-    return Alert(**alert)
+    return alert
 
 
 def main():
@@ -214,12 +214,12 @@ def main():
         LOG.basicConfig(filename=LOG_FILE, format=LOG_FORMAT, datefmt=LOG_DATE_FMT, level=LOG.INFO)
 
     LOG.info("[alerta] endpoint=%s key=%s", args.endpoint, args.key)
-    api = ApiClient(endpoint=args.endpoint, key=args.key, ssl_verify=args.sslverify)
+    api = Client(endpoint=args.endpoint, key=args.key, ssl_verify=args.sslverify)
 
     LOG.debug("[alerta] sendto=%s, summary=%s, body=%s", args.sendto, args.summary, args.body)
     try:
         alert = parse_zabbix(args.summary, args.body)
-        api.send(alert)
+        api.send_alert(**alert)
     except (SystemExit, KeyboardInterrupt):
         LOG.warning("Exiting zabbix-alerta.")
         sys.exit(0)

@@ -1,7 +1,7 @@
 
 from setuptools import setup, find_packages
 
-version = '3.4.0'
+version = '3.5.0'
 
 setup(
     name="zabbix-alerta",
@@ -17,7 +17,7 @@ setup(
         'zabbix_config'
     ],
     install_requires=[
-        'alerta',
+        'alerta>=5.0.2',
         'pyzabbix',
         'protobix'
     ],
