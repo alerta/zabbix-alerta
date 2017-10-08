@@ -20,8 +20,8 @@ except ImportError:
 
 from pyzabbix import ZabbixAPI, ZabbixAPIException
 
-from alertaclient.api import ApiClient
-from alertaclient.alert import Alert
+from alertaclient.api import Client
+from alertaclient.models.alert import Alert
 
 __version__ = '3.4.0'
 
@@ -312,7 +312,7 @@ class ZabbixConfig(object):
         print('alert triggered by event')
         print(response[0])
 
-        api = ApiClient(endpoint, key)
+        api = Client(endpoint, key)
 
         print('check alert received by Alerta')
         while True:
