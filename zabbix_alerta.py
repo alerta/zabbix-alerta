@@ -14,7 +14,6 @@ except ImportError:
     import ConfigParser as configparser
 
 from alertaclient.api import Client
-from alertaclient.models.alert import Alert
 
 __version__ = '3.4.0'
 
