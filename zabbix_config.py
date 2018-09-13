@@ -22,7 +22,7 @@ from pyzabbix import ZabbixAPI, ZabbixAPIException
 
 from alertaclient.api import Client
 
-__version__ = '3.5.0'
+__version__ = '3.5.1'
 
 OPTIONS = {
     'config_file': '~/.alerta.conf',
@@ -41,7 +41,7 @@ epilog = """Note
 
 Example
 
-  $ zac --server http://zabbix-web --trapper zabbix-server http://alerta/api
+  $ zac --server http://zabbix-web --trapper zabbix-server -w http://alerta:8080/api
 
 """
 
