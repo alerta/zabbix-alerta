@@ -21,9 +21,8 @@ except ImportError:
 from pyzabbix import ZabbixAPI, ZabbixAPIException
 
 from alertaclient.api import Client
-from alertaclient.models.alert import Alert
 
-__version__ = '3.4.0'
+__version__ = '3.5.0'
 
 OPTIONS = {
     'config_file': '~/.alerta.conf',
@@ -320,10 +319,10 @@ class ZabbixConfig(object):
                 response = api.get_alerts(query=[('event', 'test.alerta'), ('from-date', from_date)])
             except Exception as e:
                 sys.exit(e)
-            if response['total'] > 0:
+            if len(response) > 0:
                 break
             time.sleep(5)
-        print(response['alerts'][-1]['lastReceiveId'])
+        print(response[0].last_receive_id)
 
         print('success!')
 
