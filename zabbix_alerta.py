@@ -15,7 +15,7 @@ except ImportError:
 
 from alertaclient.api import Client
 
-__version__ = '3.4.0'
+__version__ = '3.4.1'
 
 LOG_FILE = '/var/log/zabbix/zabbix_alerta.log'
 LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
@@ -97,7 +97,8 @@ dateTime={EVENT.RECOVERY.DATE}T{EVENT.RECOVERY.TIME}Z
 
 # FIXME - use {ITEM.APPLICATION} for alert "group" when ZBXNEXT-2684 is resolved (see https://support.zabbix.com/browse/ZBXNEXT-2684)
 
-def parse_zabbix(subject, message, **kwargs):
+
+def parse_zabbix(subject, message):
 
     alert = {}
     attributes = {}
@@ -128,7 +129,7 @@ def parse_zabbix(subject, message, **kwargs):
         LOG.debug('%s -> %s', macro, value)
 
     # if {$ENVIRONMENT} user macro isn't defined anywhere set default
-    if alert['environment'] == '{$ENVIRONMENT}':
+    if alert.get('environment', '') == '{$ENVIRONMENT}':
         alert['environment'] = 'Production'
 
     zabbix_status = alert.pop('status', None)
