@@ -60,6 +60,11 @@ When active: 1-7,00:00-24:00
 Use if severity: (all)
 Status: Enabled
 ```
+
+**Note:** If the [Docker container for Alerta](https://hub.docker.com/r/alerta/alerta-web/)
+is used then the "Send to" URL will use a host and port specific to
+your environment and the URL path will need to include `/api` eg. `http://x.x.x.x:8080/api`.
+
 **Note:** If API authentication is enabled then an API key will need to be
 specified in the `Send to` configuration. The API key is added after the API
 endpoint separated only by a semicolon. eg. `http://x.x.x.x;YOUR_API_KEY_HERE`
