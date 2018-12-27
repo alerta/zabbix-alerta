@@ -2,7 +2,7 @@ Zabbix-Alerta Gateway
 =====================
 
 Consolidate Zabbix alerts from across multiple sites into a single
-"at-a-glance" console by using a custom Zabbix [alertscript](https://www.zabbix.com/documentation/3.4/manual/config/notifications/media/script).
+"at-a-glance" console by using a custom Zabbix [alertscript](https://www.zabbix.com/documentation/current/manual/config/notifications/media/script).
 
 Transform this ...
 
@@ -123,7 +123,7 @@ type=zabbixAlert
 dateTime={EVENT.RECOVERY.DATE}T{EVENT.RECOVERY.TIME}Z
 ```
 
-https://www.zabbix.com/documentation/3.2/manual/appendix/macros/supported_by_location
+https://www.zabbix.com/documentation/current/manual/appendix/macros/supported_by_location
 
 To send OK events ...
 
@@ -327,8 +327,8 @@ screenshots.
 References
 ----------
 
-  * Zabbix Custom Alert Scripts: https://www.zabbix.com/documentation/3.4/manual/config/notifications/media/script
-  * Zabbix Custom User Macros: https://www.zabbix.com/documentation/3.4/manual/config/macros/usermacros
+  * Zabbix Custom Alert Scripts: https://www.zabbix.com/documentation/current/manual/config/notifications/media/script
+  * Zabbix Custom User Macros: https://www.zabbix.com/documentation/current/manual/config/macros/usermacros
 
 License
 -------
