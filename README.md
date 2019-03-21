@@ -259,18 +259,11 @@ SEVERITY_MAP = {
     'Not classified': 6,
     'unknown'       : 9
 }
-```
+DEFAULT_NORMAL_SEVERITY = 'OK'
+DEFAULT_PREVIOUS_SEVERITY = 'Not classified'
 
-Add the following to the Alerta web console `config.js` file:
-
-```javascript
-'use strict';
-angular.module('config', [])
-  .constant('config', {
-    'endpoint'    : "/api",
-    'provider'    : "basic",
-    'colors'      : {
-      'severity': {
+COLOR_MAP = {
+    'severity': {
         'Disaster'      : '#E45959',
         'High'          : '#E97659',
         'Average'       : '#FFA059',
@@ -279,19 +272,8 @@ angular.module('config', [])
         'Not classified': '#97AAB3',
         'OK'            : '#59DB8F',
         'unknown'       : '#BA2222'
-      }
-    },
-    'severity'    : {
-      'Disaster'      : 0,
-      'High'          : 1,
-      'Average'       : 2,
-      'Warning'       : 3,
-      'Information'   : 4,
-      'OK'            : 5,
-      'Not classified': 6,
-      'unknown'       : 9
     }
-});
+}
 ```
 
 ![zabbix-severity-colors](/docs/images/zabbix-severity-colors.png?raw=true)
@@ -333,4 +315,4 @@ References
 License
 -------
 
-Copyright (c) 2013-2016 Nick Satterly. Available under the MIT License.
+Copyright (c) 2013-2019 Nick Satterly. Available under the MIT License.
