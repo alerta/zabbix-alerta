@@ -3,34 +3,33 @@
     zac: Zabbix-Alerta Configurator
 """
 
+import argparse
+import getpass
+import logging
 import os
 import sys
 import time
-import logging
-import argparse
-import getpass
-import protobix
-
 from datetime import datetime
+
+import protobix
+from alertaclient.api import Client
+from pyzabbix import ZabbixAPI, ZabbixAPIException
 
 try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
 
-from pyzabbix import ZabbixAPI, ZabbixAPIException
-
-from alertaclient.api import Client
 
 __version__ = '3.5.1'
 
 OPTIONS = {
     'config_file': '~/.alerta.conf',
-    'profile':     None,
-    'endpoint':    'http://localhost:8080',
-    'key':         '',
-    'sslverify':   True,
-    'debug':       False
+    'profile': None,
+    'endpoint': 'http://localhost:8080',
+    'key': '',
+    'sslverify': True,
+    'debug': False,
 }
 
 epilog = """Note
@@ -103,13 +102,12 @@ NO_MANUAL_CLOSE = 0
 ALLOW_MANUAL_CLOSE = 1
 
 
-class ZabbixConfig(object):
-
+class ZabbixConfig:
     def __init__(self, endpoint, user, password=''):
 
         self.zapi = ZabbixAPI(endpoint)
         self.zapi.login(user, password)
-        print("Connected to Zabbix API Version %s" % self.zapi.api_version())
+        print('Connected to Zabbix API Version %s' % self.zapi.api_version())
 
         self.item_id = None
         self.trigger_id = None
@@ -129,7 +127,7 @@ class ZabbixConfig(object):
                 exec_path='zabbix-alerta',
                 exec_params='{ALERT.SENDTO}\n{ALERT.SUBJECT}\n{ALERT.MESSAGE}\n',
                 maxattempts='5',
-                attempt_interval='5s'
+                attempt_interval='5s',
             )
             media_id = response['mediatypeids'][0]
 
@@ -141,67 +139,62 @@ class ZabbixConfig(object):
             'sendto': sendto,
             'active': ENABLED,
             'severity': NIWAHD,
-            'period': '1-7,00:00-24:00'
+            'period': '1-7,00:00-24:00',
         }
 
         try:
-            self.zapi.user.updatemedia(
-                users={"userid": admin_user_id},
-                medias=media_alerta
-            )
+            self.zapi.user.updatemedia(users={'userid': admin_user_id}, medias=media_alerta)
         except ZabbixAPIException as e:
             sys.exit(e)
 
         default_message = (
-            "resource={HOST.NAME1}\r\n"
-            "event={ITEM.KEY1}\r\n"
-            "environment=Production\r\n"
-            "severity={TRIGGER.SEVERITY}" + ("!!" if use_zabbix_severity else "") + "\r\n"
-            "status={TRIGGER.STATUS}\r\n"
-            "ack={EVENT.ACK.STATUS}\r\n"
-            "service={TRIGGER.HOSTGROUP.NAME}\r\n"
-            "group=Zabbix\r\n"
-            "value={ITEM.VALUE1}\r\n"
-            "text={TRIGGER.STATUS}: {TRIGGER.NAME}\r\n"
-            "tags={EVENT.TAGS}\r\n"
-            "attributes.ip={HOST.IP1}\r\n"
-            "attributes.thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}\r\n"
-            "attributes.eventId={EVENT.ID}\r\n"
-            "attributes.triggerId={TRIGGER.ID}\r\n"
-            "type=zabbixAlert\r\n"
-            "dateTime={EVENT.DATE}T{EVENT.TIME}Z\r\n"
+            'resource={HOST.NAME1}\r\n'
+            'event={ITEM.KEY1}\r\n'
+            'environment=Production\r\n'
+            'severity={TRIGGER.SEVERITY}' + ('!!' if use_zabbix_severity else '') + '\r\n'
+            'status={TRIGGER.STATUS}\r\n'
+            'ack={EVENT.ACK.STATUS}\r\n'
+            'service={TRIGGER.HOSTGROUP.NAME}\r\n'
+            'group=Zabbix\r\n'
+            'value={ITEM.VALUE1}\r\n'
+            'text={TRIGGER.STATUS}: {TRIGGER.NAME}\r\n'
+            'tags={EVENT.TAGS}\r\n'
+            'attributes.ip={HOST.IP1}\r\n'
+            'attributes.thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}\r\n'
+            'attributes.eventId={EVENT.ID}\r\n'
+            'attributes.triggerId={TRIGGER.ID}\r\n'
+            'type=zabbixAlert\r\n'
+            'dateTime={EVENT.DATE}T{EVENT.TIME}Z\r\n'
         )
 
-        operations_console_link = 'attributes.moreInfo=<a href="%s/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}" target="_blank">Zabbix console</a>' % web_url
+        operations_console_link = (
+            'attributes.moreInfo=<a href="%s/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}" target="_blank">Zabbix console</a>'
+            % web_url
+        )
         operations = {
-            "operationtype": SEND_MESSAGE,
-            "opmessage": {
-                "default_msg": USE_DATA_FROM_OPERATION,
-                "mediatypeid": media_id,
-                "subject": "{TRIGGER.STATUS}: {TRIGGER.NAME}",
-                "message": default_message + operations_console_link if use_console_link else ''
+            'operationtype': SEND_MESSAGE,
+            'opmessage': {
+                'default_msg': USE_DATA_FROM_OPERATION,
+                'mediatypeid': media_id,
+                'subject': '{TRIGGER.STATUS}: {TRIGGER.NAME}',
+                'message': default_message + operations_console_link if use_console_link else '',
             },
-            "opmessage_usr": [
-                {
-                    "userid": admin_user_id
-                }
-            ]
+            'opmessage_usr': [{'userid': admin_user_id}],
         }
 
-        recovery_console_link = 'attributes.moreInfo=<a href="%s/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}" target="_blank">Zabbix console</a>' % web_url
+        recovery_console_link = (
+            'attributes.moreInfo=<a href="%s/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}" target="_blank">Zabbix console</a>'
+            % web_url
+        )
         recovery_operations = {
-            "operationtype": SEND_MESSAGE,
-            "opmessage": {
-                "default_msg": USE_DATA_FROM_OPERATION,
-                "mediatypeid": media_id,
-                "subject": "{TRIGGER.STATUS}: {TRIGGER.NAME}",
-                "message": default_message + recovery_console_link if use_console_link else ''
+            'operationtype': SEND_MESSAGE,
+            'opmessage': {
+                'default_msg': USE_DATA_FROM_OPERATION,
+                'mediatypeid': media_id,
+                'subject': '{TRIGGER.STATUS}: {TRIGGER.NAME}',
+                'message': default_message + recovery_console_link if use_console_link else '',
             },
-            "opmessage_usr": [
-                {
-                    "userid": admin_user_id
-                }
-            ]
+            'opmessage_usr': [{'userid': admin_user_id}],
         }
 
         try:
@@ -210,13 +203,13 @@ class ZabbixConfig(object):
                 eventsource=TRIGGERS,
                 status=ENABLED,
                 esc_period=120,
-                def_shortdata="{TRIGGER.NAME}: {TRIGGER.STATUS}",
+                def_shortdata='{TRIGGER.NAME}: {TRIGGER.STATUS}',
                 def_longdata=default_message,
-                r_shortdata="{TRIGGER.NAME}: {TRIGGER.STATUS}",
+                r_shortdata='{TRIGGER.NAME}: {TRIGGER.STATUS}',
                 r_longdata=default_message,
                 maintenance_mode=DO_NOT_PAUSE_EXEC,
                 operations=[operations],
-                recovery_operations=[recovery_operations]
+                recovery_operations=[recovery_operations],
             )
         except ZabbixAPIException as e:
             print(e)
@@ -237,7 +230,7 @@ class ZabbixConfig(object):
                 key_='test.alerta',
                 value_type=TEXT,
                 hostid=zabbix_server_id,
-                status=ENABLED
+                status=ENABLED,
             )
             self.item_id = response['itemids'][0]
 
@@ -248,7 +241,7 @@ class ZabbixConfig(object):
                 type=GENERATE_MULTIPLE_EVENTS,
                 priority=INFORMATION,
                 status=ENABLED,
-                manual_close=ALLOW_MANUAL_CLOSE
+                manual_close=ALLOW_MANUAL_CLOSE,
             )
             self.trigger_id = response['triggerids'][0]
         except ZabbixAPIException:
@@ -274,8 +267,15 @@ class ZabbixConfig(object):
         count = 0
         while True:
             count += 1
-            response = self.zapi.history.get(itemids=[self.item_id], history=TEXT, time_from=now, output='extend', sortfield='clock',
-                                             sortorder='DESC', limit=10)
+            response = self.zapi.history.get(
+                itemids=[self.item_id],
+                history=TEXT,
+                time_from=now,
+                output='extend',
+                sortfield='clock',
+                sortorder='DESC',
+                limit=10,
+            )
             zabbix_send('RETRY%s' % count)
             if len(response) > 1:
                 break
@@ -285,12 +285,17 @@ class ZabbixConfig(object):
         print('sent items received by zabbix')
         print(response)
 
-        from_date = datetime.utcnow().replace(microsecond=0).isoformat() + ".000Z"
+        from_date = datetime.utcnow().replace(microsecond=0).isoformat() + '.000Z'
 
         print('wait for triggered event')
         while True:
-            response = self.zapi.event.get(objectids=self.trigger_id, time_from=now, output='extend',
-                                           sortfield=['clock', 'eventid'], sortorder='DESC')
+            response = self.zapi.event.get(
+                objectids=self.trigger_id,
+                time_from=now,
+                output='extend',
+                sortfield=['clock', 'eventid'],
+                sortorder='DESC',
+            )
             if len(response) > 0 and 'eventid' in response[0]:
                 event_id = response[0]['eventid']
                 break
@@ -302,7 +307,11 @@ class ZabbixConfig(object):
 
         print('wait for alert')
         while True:
-            response = self.zapi.alert.get(eventid=event_id, time_from=now, output='extend',)
+            response = self.zapi.alert.get(
+                eventid=event_id,
+                time_from=now,
+                output='extend',
+            )
             if len(response) > 0:
                 break
             print('waiting 2 seconds...')
@@ -343,51 +352,24 @@ def main():
     try:
         config.read(os.path.expanduser(config_file))
     except Exception:
-        sys.exit("Problem reading configuration file %s - is this an ini file?" % config_file)
+        sys.exit('Problem reading configuration file %s - is this an ini file?' % config_file)
 
     parser = argparse.ArgumentParser(
         prog='zac',
         usage='zac [OPTIONS] SENDTO',
         description='Zabbix-Alerta configuration script',
         epilog=epilog,
-        formatter_class=argparse.RawTextHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter,
     )
+    parser.add_argument('--server', default='http://localhost', help='Zabbix web API URL (default: http://localhost)')
+    parser.add_argument('--user', default='Admin', help='Zabbix admin user (default: "Admin")')
     parser.add_argument(
-        '--server',
-        default='http://localhost',
-        help='Zabbix web API URL (default: http://localhost)'
+        '--no-password', '-w', action='store_true', help='do not prompt for password (default: "zabbix")'
     )
-    parser.add_argument(
-        '--user',
-        default='Admin',
-        help='Zabbix admin user (default: "Admin")'
-    )
-    parser.add_argument(
-        '--no-password',
-        '-w',
-        action='store_true',
-        help='do not prompt for password (default: "zabbix")'
-    )
-    parser.add_argument(
-        '--trapper',
-        default='localhost',
-        help='Zabbix trapper host (default: localhost)'
-    )
-    parser.add_argument(
-        '--zabbix-severity',
-        '-Z',
-        action='store_true',
-        help='use Zabbix severity levels'
-    )
-    parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='print debug output'
-    )
-    parser.add_argument(
-        'sendto',
-        help='config profile or alerta API endpoint and key'
-    )
+    parser.add_argument('--trapper', default='localhost', help='Zabbix trapper host (default: localhost)')
+    parser.add_argument('--zabbix-severity', '-Z', action='store_true', help='use Zabbix severity levels')
+    parser.add_argument('--debug', action='store_true', help='print debug output')
+    parser.add_argument('sendto', help='config profile or alerta API endpoint and key')
     args, left = parser.parse_known_args()
 
     # sendto=apiUrl[;key]
@@ -440,12 +422,13 @@ def main():
         zc.test_action(args.trapper, args.endpoint, args.key)
 
         # clean up ?
-        #zc.clean_up()
+        # zc.clean_up()
 
     except (SystemExit, KeyboardInterrupt):
         sys.exit(0)
     except Exception as e:
         sys.exit(e)
+
 
 if __name__ == '__main__':
     main()

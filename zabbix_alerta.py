@@ -3,40 +3,41 @@
     zabbix-alerta: Forward Zabbix events to Alerta
 """
 
-import os
-import sys
 import argparse
 import logging as LOG
+import os
+import sys
+
+from alertaclient.api import Client
 
 try:
     import configparser
 except ImportError:
-    import ConfigParser as configparser
+    import ConfigParser as configparser  # type: ignore
 
-from alertaclient.api import Client
 
 __version__ = '3.4.1'
 
 LOG_FILE = '/var/log/zabbix/zabbix_alerta.log'
-LOG_FORMAT = "%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s"
-LOG_DATE_FMT = "%Y-%m-%d %H:%M:%S"
+LOG_FORMAT = '%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s'
+LOG_DATE_FMT = '%Y-%m-%d %H:%M:%S'
 
 OPTIONS = {
     'config_file': '~/.alerta.conf',
-    'profile':     None,
-    'endpoint':    'http://localhost:8080',
-    'key':         '',
-    'sslverify':   True,
-    'debug':       False
+    'profile': None,
+    'endpoint': 'http://localhost:8080',
+    'key': '',
+    'sslverify': True,
+    'debug': False,
 }
 
 ZBX_SEVERITY_MAP = {
-    'Disaster':       'critical',
-    'High':           'major',
-    'Average':        'minor',
-    'Warning':        'warning',
-    'Information':    'informational',
-    'Not classified': 'indeterminate'
+    'Disaster': 'critical',
+    'High': 'major',
+    'Average': 'minor',
+    'Warning': 'warning',
+    'Information': 'informational',
+    'Not classified': 'indeterminate',
 }
 
 epilog = '''INSTALL
@@ -117,7 +118,7 @@ def parse_zabbix(subject, message):
         elif macro == 'severity':
             if value.endswith('!!'):
                 zabbix_severity = True
-                value = value.replace('!!','')
+                value = value.replace('!!', '')
             else:
                 value = ZBX_SEVERITY_MAP.get(value, 'indeterminate')
         elif macro == 'tags':
@@ -144,8 +145,8 @@ def parse_zabbix(subject, message):
         alert['status'] = 'ack'
 
     alert['attributes'] = attributes
-    alert['origin'] = "zabbix/%s" % os.uname()[1]
-    alert['rawData'] = "%s\n\n%s" % (subject, message)
+    alert['origin'] = 'zabbix/%s' % os.uname()[1]
+    alert['rawData'] = '{}\n\n{}'.format(subject, message)
 
     return alert
 
@@ -158,27 +159,18 @@ def main():
     try:
         config.read(os.path.expanduser(config_file))
     except Exception:
-        sys.exit("Problem reading configuration file %s - is this an ini file?" % config_file)
+        sys.exit('Problem reading configuration file %s - is this an ini file?' % config_file)
 
     parser = argparse.ArgumentParser(
         prog='zabbix-alerta',
         usage='zabbix-alerta SENDTO SUMMARY BODY',
         description='Zabbix-to-Alerta integration script',
         epilog=epilog,
-        formatter_class=argparse.RawTextHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument(
-        'sendto',
-        help='config profile or alerta API endpoint and key'
-    )
-    parser.add_argument(
-        'summary',
-        help='alert summary'
-    )
-    parser.add_argument(
-        'body',
-        help='alert body (see format below)'
-    )
+    parser.add_argument('sendto', help='config profile or alerta API endpoint and key')
+    parser.add_argument('summary', help='alert summary')
+    parser.add_argument('body', help='alert body (see format below)')
     args, left = parser.parse_known_args()
 
     # sendto=apiUrl[;key]
@@ -213,19 +205,20 @@ def main():
     else:
         LOG.basicConfig(filename=LOG_FILE, format=LOG_FORMAT, datefmt=LOG_DATE_FMT, level=LOG.INFO)
 
-    LOG.info("[alerta] endpoint=%s key=%s", args.endpoint, args.key)
+    LOG.info('[alerta] endpoint=%s key=%s', args.endpoint, args.key)
     api = Client(endpoint=args.endpoint, key=args.key, ssl_verify=args.sslverify)
 
-    LOG.debug("[alerta] sendto=%s, summary=%s, body=%s", args.sendto, args.summary, args.body)
+    LOG.debug('[alerta] sendto=%s, summary=%s, body=%s', args.sendto, args.summary, args.body)
     try:
         alert = parse_zabbix(args.summary, args.body)
         api.send_alert(**alert)
     except (SystemExit, KeyboardInterrupt):
-        LOG.warning("Exiting zabbix-alerta.")
+        LOG.warning('Exiting zabbix-alerta.')
         sys.exit(0)
     except Exception as e:
         LOG.error(e, exc_info=1)
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
