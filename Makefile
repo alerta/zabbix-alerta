@@ -71,12 +71,14 @@ hooks: $(PRE_COMMIT)
 ## lint			- Lint and type checking.
 lint: $(PYLINT) $(BLACK) $(MYPY)
 	$(PYLINT) --rcfile pylintrc $(PROJECT).py
-	$(BLACK) -l120 -S --check -v $(PROJECT).py || true
+	$(BLACK) -l120 -S --check -v $(PROJECT) || true
 	$(MYPY) $(PROJECT).py
 
 ## test			- Run unit tests.
 test: $(PYTEST)
 	$(PYTEST)
+
+all: format hooks lint test
 
 ## help			- Show this help.
 help: Makefile

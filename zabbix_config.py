@@ -21,7 +21,6 @@ except ImportError:
     import ConfigParser as configparser
 
 
-
 __version__ = '3.5.1'
 
 OPTIONS = {
