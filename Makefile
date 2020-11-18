@@ -62,7 +62,7 @@ endif
 
 ## format			- Code formatter.
 format: $(BLACK)
-	$(BLACK) -l120 -S -v $(PROJECT)
+	$(BLACK) -l120 -S -v $(PROJECT).py
 
 ## hooks			- Run pre-commit hooks.
 hooks: $(PRE_COMMIT)
@@ -71,7 +71,7 @@ hooks: $(PRE_COMMIT)
 ## lint			- Lint and type checking.
 lint: $(PYLINT) $(BLACK) $(MYPY)
 	$(PYLINT) --rcfile pylintrc $(PROJECT).py
-	$(BLACK) -l120 -S --check -v $(PROJECT) || true
+	$(BLACK) -l120 -S --check -v $(PROJECT).py || true
 	$(MYPY) $(PROJECT).py
 
 ## test			- Run unit tests.

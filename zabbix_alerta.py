@@ -199,6 +199,7 @@ def main():
 
     parser.set_defaults(**OPTIONS)
     args = parser.parse_args()
+    print(args)
 
     if args.debug or not os.path.isdir('/var/log/zabbix'):
         LOG.basicConfig(stream=sys.stderr, format=LOG_FORMAT, datefmt=LOG_DATE_FMT, level=LOG.DEBUG)

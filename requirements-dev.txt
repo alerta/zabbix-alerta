@@ -3,5 +3,6 @@ pre-commit==2.8.2
 pylint==2.6.0
 pytest-cov
 pytest>=5.4.3
+requests_mock
 twine
 wheel
