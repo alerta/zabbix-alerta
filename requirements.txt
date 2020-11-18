@@ -1,3 +1,4 @@
 alerta
+click
 protobix
 pyzabbix
