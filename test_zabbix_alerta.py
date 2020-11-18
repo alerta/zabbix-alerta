@@ -39,7 +39,8 @@ trigger = {
     'HOSTGROUP_NAME': 'group1',
 }
 host = {'NAME1': 'hostname1', 'IP1': '10.1.1.1'}
-item = {'KEY1': 'e4597efc-3811-4476-9cf5-4e9d8501037e', 'VALUE1': '61°'}
+# item = {'KEY1': 'e4597efc-3811-4476-9cf5-4e9d8501037e', 'VALUE1': '61°'}
+item = {'KEY1': 'e4597efc-3811-4476-9cf5-4e9d8501037e', 'VALUE1': '61 degrees'}
 event = {'ID': 2, 'DATE': '', 'TIME': '', 'ACK_STATUS': '', 'TAGS': 'tag1,tag2'}
 
 summary = SUMMARY_TEMPLATE.format(TRIGGER=SimpleNamespace(**trigger))
