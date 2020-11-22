@@ -1,4 +1,4 @@
-alerta
-click
-protobix
-pyzabbix
+alerta==8.0.0
+click==7.1.2
+protobix==1.0.2
+pyzabbix==0.8.2
