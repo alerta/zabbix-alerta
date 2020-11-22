@@ -3,30 +3,20 @@
     zabbix-alerta: Forward Zabbix events to Alerta
 """
 
-import argparse
-import logging as LOG
+import configparser
 import os
-import sys
 
+import click
 from alertaclient.api import Client
 
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser  # type: ignore
+__version__ = '4.0.0'
 
-
-__version__ = '3.4.1'
-
-LOG_FILE = '/var/log/zabbix/zabbix_alerta.log'
-LOG_FORMAT = '%(asctime)s.%(msecs).03d %(name)s[%(process)d] %(threadName)s %(levelname)s - %(message)s'
-LOG_DATE_FMT = '%Y-%m-%d %H:%M:%S'
-
-OPTIONS = {
+default_config = {
     'config_file': '~/.alerta.conf',
     'profile': None,
     'endpoint': 'http://localhost:8080',
     'key': '',
+    'timeout': 5.0,
     'sslverify': True,
     'debug': False,
 }
@@ -40,64 +30,6 @@ ZBX_SEVERITY_MAP = {
     'Not classified': 'indeterminate',
 }
 
-epilog = '''INSTALL
-
-   $ ln -s `which zabbix-alerta` <AlertScriptsPath>
-
-ALERT FORMAT
-
-OPERATIONS
-
-Default subject:
-{TRIGGER.STATUS}: {TRIGGER.NAME}
-
-Default message:
-resource={HOST.NAME1}
-event={ITEM.KEY1}
-environment=Production
-severity={TRIGGER.SEVERITY}!!
-status={TRIGGER.STATUS}
-ack={EVENT.ACK.STATUS}
-service={TRIGGER.HOSTGROUP.NAME}
-group=Zabbix
-value={ITEM.VALUE1}
-text={TRIGGER.STATUS}: {TRIGGER.NAME}
-tags={EVENT.TAGS}
-attributes.ip={HOST.IP1}
-attributes.thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
-attributes.moreInfo=<a href="http://x.x.x.x/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}">Zabbix console</a>
-type=zabbixAlert
-dateTime={EVENT.DATE}T{EVENT.TIME}Z
-
-RECOVERY
-
-Default subject:
-{TRIGGER.STATUS}: {TRIGGER.NAME}
-
-Default message:
-resource={HOST.NAME1}
-event={ITEM.KEY1}
-environment=Production
-severity={TRIGGER.SEVERITY}!!
-status={TRIGGER.STATUS}
-ack={EVENT.ACK.STATUS}
-service={TRIGGER.HOSTGROUP.NAME}
-group=Zabbix
-value={ITEM.VALUE1}
-text={TRIGGER.STATUS}: {ITEM.NAME1}
-tags={EVENT.RECOVERY.TAGS}
-attributes.ip={HOST.IP1}
-attributes.thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
-attributes.moreInfo=<a href="http://x.x.x.x/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}">Zabbix console</a>
-type=zabbixAlert
-dateTime={EVENT.RECOVERY.DATE}T{EVENT.RECOVERY.TIME}Z
-
-
-
-'''
-
-# FIXME - use {ITEM.APPLICATION} for alert "group" when ZBXNEXT-2684 is resolved (see https://support.zabbix.com/browse/ZBXNEXT-2684)
-
 
 def parse_zabbix(subject, message):
 
@@ -110,11 +42,11 @@ def parse_zabbix(subject, message):
         try:
             macro, value = line.rstrip().split('=', 1)
         except ValueError as e:
-            LOG.warning('%s: %s', e, line)
+            click.secho('{}: {}'.format(e, line))
             continue
 
         if macro == 'service':
-            value = value.split(', ')
+            value = value.split(',')
         elif macro == 'severity':
             if value.endswith('!!'):
                 zabbix_severity = True
@@ -122,12 +54,12 @@ def parse_zabbix(subject, message):
             else:
                 value = ZBX_SEVERITY_MAP.get(value, 'indeterminate')
         elif macro == 'tags':
-            value = value.split(', ')
+            value = value.split(',')
         elif macro.startswith('attributes.'):
             attributes[macro.replace('attributes.', '')] = value
 
         alert[macro] = value
-        LOG.debug('%s -> %s', macro, value)
+        click.echo('{} -> {}'.format(macro, value))
 
     # if {$ENVIRONMENT} user macro isn't defined anywhere set default
     if alert.get('environment', '') == '{$ENVIRONMENT}':
@@ -151,74 +83,127 @@ def parse_zabbix(subject, message):
     return alert
 
 
-def main():
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-    config_file = os.environ.get('ALERTA_CONF_FILE') or OPTIONS['config_file']
 
-    config = configparser.RawConfigParser(defaults=OPTIONS)
-    try:
-        config.read(os.path.expanduser(config_file))
-    except Exception:
-        sys.exit('Problem reading configuration file %s - is this an ini file?' % config_file)
+@click.command('zabbix-alerta', context_settings=CONTEXT_SETTINGS)
+@click.argument('sendto')
+@click.argument('summary')
+@click.argument('body')
+def cli(sendto, summary, body):
+    """
+        Zabbix-to-Alerta integration script
 
-    parser = argparse.ArgumentParser(
-        prog='zabbix-alerta',
-        usage='zabbix-alerta SENDTO SUMMARY BODY',
-        description='Zabbix-to-Alerta integration script',
-        epilog=epilog,
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    parser.add_argument('sendto', help='config profile or alerta API endpoint and key')
-    parser.add_argument('summary', help='alert summary')
-    parser.add_argument('body', help='alert body (see format below)')
-    args, left = parser.parse_known_args()
+    INSTALL
+
+       $ ln -s `which zabbix-alerta` <AlertScriptsPath>
+
+    ALERT FORMAT
+
+    OPERATIONS
+
+    Default subject:
+
+    {TRIGGER.STATUS}: {TRIGGER.NAME}
+
+    Default message:
+
+    \b
+    resource={HOST.NAME1}
+    event={ITEM.KEY1}
+    environment=Production
+    severity={TRIGGER.SEVERITY}!!
+    status={TRIGGER.STATUS}
+    ack={EVENT.ACK.STATUS}
+    service={TRIGGER.HOSTGROUP.NAME}
+    group=Zabbix
+    value={ITEM.VALUE1}
+    text={TRIGGER.STATUS}: {TRIGGER.NAME}
+    tags={EVENT.TAGS}
+    attributes.ip={HOST.IP1}
+    attributes.thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
+    attributes.moreInfo=<a href="http://x.x.x.x/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}">Zabbix console</a>
+    type=zabbixAlert
+    dateTime={EVENT.DATE}T{EVENT.TIME}Z
+
+    RECOVERY
+
+    Default subject:
+
+    {TRIGGER.STATUS}: {TRIGGER.NAME}
+
+    Default message:
+
+    \b
+    resource={HOST.NAME1}
+    event={ITEM.KEY1}
+    environment=Production
+    severity={TRIGGER.SEVERITY}!!
+    status={TRIGGER.STATUS}
+    ack={EVENT.ACK.STATUS}
+    service={TRIGGER.HOSTGROUP.NAME}
+    group=Zabbix
+    value={ITEM.VALUE1}
+    text={TRIGGER.STATUS}: {ITEM.NAME1}
+    tags={EVENT.RECOVERY.TAGS}
+    attributes.ip={HOST.IP1}
+    attributes.thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
+    attributes.moreInfo=<a href="http://x.x.x.x/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}">Zabbix console</a>
+    type=zabbixAlert
+    dateTime={EVENT.RECOVERY.DATE}T{EVENT.RECOVERY.TIME}Z
+    """
+
+    # FIXME - use {ITEM.APPLICATION} for alert "group" when ZBXNEXT-2684 is resolved (see https://support.zabbix.com/browse/ZBXNEXT-2684)
+
+    click.echo('[alerta] Sending message "{}" to {}...'.format(summary, sendto))
+
+    options = default_config
+    parser = configparser.RawConfigParser(defaults=options)
+
+    options['config_file'] = os.environ.get('ALERTA_CONF_FILE') or options['config_file']
+    parser.read(os.path.expanduser(options['config_file']))
 
     # sendto=apiUrl[;key]
-    if args.sendto.startswith('http://') or args.sendto.startswith('https://'):
+    if sendto.startswith('http://') or sendto.startswith('https://'):
         want_profile = None
         try:
-            OPTIONS['endpoint'], OPTIONS['key'] = args.sendto.split(';', 1)
+            options['endpoint'], options['key'] = sendto.split(';', 1)
         except ValueError:
-            OPTIONS['endpoint'] = args.sendto
+            options['endpoint'] = sendto
     # sendto=profile
     else:
-        want_profile = args.sendto or os.environ.get('ALERTA_DEFAULT_PROFILE') or config.defaults().get('profile')
+        want_profile = sendto or os.environ.get('ALERTA_DEFAULT_PROFILE') or parser.defaults().get('profile')
 
-        if want_profile and config.has_section('profile %s' % want_profile):
-            for opt in OPTIONS:
+        if want_profile and parser.has_section('profile %s' % want_profile):
+            for opt in options:
                 try:
-                    OPTIONS[opt] = config.getboolean('profile %s' % want_profile, opt)
+                    options[opt] = parser.getboolean('profile %s' % want_profile, opt)
                 except (ValueError, AttributeError):
-                    OPTIONS[opt] = config.get('profile %s' % want_profile, opt)
+                    options[opt] = parser.get('profile %s' % want_profile, opt)
         else:
-            for opt in OPTIONS:
+            for opt in options:
                 try:
-                    OPTIONS[opt] = config.getboolean('DEFAULT', opt)
+                    options[opt] = parser.getboolean('DEFAULT', opt)
                 except (ValueError, AttributeError):
-                    OPTIONS[opt] = config.get('DEFAULT', opt)
+                    options[opt] = parser.get('DEFAULT', opt)
 
-    parser.set_defaults(**OPTIONS)
-    args = parser.parse_args()
+    options['profile'] = want_profile
+    options['endpoint'] = os.environ.get('ALERTA_ENDPOINT', options['endpoint'])
+    options['key'] = os.environ.get('ALERTA_API_KEY', options['key'])
 
-    if args.debug or not os.path.isdir('/var/log/zabbix'):
-        LOG.basicConfig(stream=sys.stderr, format=LOG_FORMAT, datefmt=LOG_DATE_FMT, level=LOG.DEBUG)
-    else:
-        LOG.basicConfig(filename=LOG_FILE, format=LOG_FORMAT, datefmt=LOG_DATE_FMT, level=LOG.INFO)
+    api = Client(
+        endpoint=options['endpoint'], key=options['key'], timeout=options['timeout'], ssl_verify=options['sslverify']
+    )
 
-    LOG.info('[alerta] endpoint=%s key=%s', args.endpoint, args.key)
-    api = Client(endpoint=args.endpoint, key=args.key, ssl_verify=args.sslverify)
-
-    LOG.debug('[alerta] sendto=%s, summary=%s, body=%s', args.sendto, args.summary, args.body)
     try:
-        alert = parse_zabbix(args.summary, args.body)
+        alert = parse_zabbix(summary, body)
         api.send_alert(**alert)
-    except (SystemExit, KeyboardInterrupt):
-        LOG.warning('Exiting zabbix-alerta.')
-        sys.exit(0)
     except Exception as e:
-        LOG.error(e, exc_info=1)
-        sys.exit(1)
+        click.secho('ERROR: {}'.format(e))
+        raise click.Abort()
+
+    click.echo('Successfully sent message "{}" to {}!'.format(summary, options['endpoint']))
 
 
 if __name__ == '__main__':
-    main()
+    cli()  # pylint: disable=no-value-for-parameter

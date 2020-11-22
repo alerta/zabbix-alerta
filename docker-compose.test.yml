@@ -1,0 +1,96 @@
+version: '3.1'
+
+services:
+  zabbix-server:
+    build: .
+#    image: zabbix/zabbix-server-mysql:alpine-latest
+    volumes:
+      - ./data/zabbix:/var/lib/zabbix
+      - ./scripts:/usr/lib/zabbix/alertscripts
+    ports:
+      - 10050-10051
+    depends_on:
+      - zabbix-db
+    environment:
+      - DB_SERVER_HOST=zabbix-db
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+      - MYSQL_DATABASE=zabbix
+      - MYSQL_ROOT_PASSWORD=secret
+      - ZBX_DEBUGLEVEL=3
+    restart: always
+#    networks:
+#      - zbxnet
+
+  zabbix-db:
+    image: mysql:5.7
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=zabbix
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+#    networks:
+#      - zbxnet
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-mysql:alpine-latest
+    ports:
+      - 10080:8080
+    depends_on:
+      - zabbix-server
+      - zabbix-db
+    environment:
+      - DB_SERVER_HOST=zabbix-db
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+      - MYSQL_DATABASE=zabbix
+      - MYSQL_ROOT_PASSWORD=secret
+      - ZBX_SERVER_HOST=zabbix-server
+      - ZBX_DEBUGLEVEL=5
+    restart: always
+#    networks:
+#      - zbxnet
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent:alpine-latest
+    restart: always
+    environment:
+      - ZBX_HOSTNAME=zabbix-agent
+      - ZBX_SERVER_HOST=zabbix-server
+    ports:
+      - 10050
+    depends_on:
+      - zabbix-server
+#    networks:
+#      - zbxnet
+
+  alerta:
+    image: alerta/alerta-web
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=mongodb://db:27017/monitoring
+      - ADMIN_USERS=admin@alerta.io
+      - PLUGINS=reject,blackout,zabbix
+      - INSTALL_PLUGINS=zabbix
+      - ZABBIX_API_URL=http://zabbix-web
+    restart: always
+#    networks:
+#      - zbxnet
+
+  db:
+    image: mongo
+    volumes:
+      - ./data/mongodb:/data/db
+    restart: always
+#    networks:
+#      - zbxnet
+
+#networks:
+#  zbxnet:
+#    driver: bridge
