@@ -3,11 +3,9 @@ import unittest
 from types import SimpleNamespace
 
 import requests_mock
-
-from zabbix_alerta import cli, parse_zabbix
-
 from click.testing import CliRunner
 
+from zabbix_alerta import cli, parse_zabbix
 
 SUMMARY_TEMPLATE = '''{TRIGGER.STATUS}: {TRIGGER.NAME}'''
 BODY_TEMPLATE = '''
@@ -71,24 +69,24 @@ class SenderTestCase(unittest.TestCase):
         result = self.runner.invoke(cli, ['http://localhost:8080', summary, body])
         self.assertEqual(
             result.output,
-            '[alerta] Sending message "PROBLEM: PSU-0.40: Temperature is above threshold" to http://localhost:8080...\n' +
-            'resource -> hostname1\n' +
-            'event -> e4597efc-3811-4476-9cf5-4e9d8501037e\n' +
-            'environment -> Production\n' +
-            'severity -> warning\n' +
-            'status -> PROBLEM\n' +
-            'ack -> \n'
-            'service -> [\'group1\']\n' +
-            'group -> Zabbix\n' +
-            'value -> 61°\n' +
-            'text -> PROBLEM: PSU-0.40: Temperature is above threshold\n' +
-            'tags -> [\'tag1\', \'tag2\']\n' +
-            'attributes.ip -> 10.1.1.1\n' +
-            'attributes.thresholdInfo -> template: expr\n' +
-            'attributes.moreInfo -> <a href="http://x.x.x.x/tr_events.php?triggerid=1&eventid=2">Zabbix console</a>\n' +
-            'type -> zabbixAlert\n' +
-            'dateTime -> 2018.01.02T13:04:30Z\n' +
-            'Successfully sent message "PROBLEM: PSU-0.40: Temperature is above threshold" to http://localhost:8080!\n'
+            '[alerta] Sending message "PROBLEM: PSU-0.40: Temperature is above threshold" to http://localhost:8080...\n'
+            + 'resource -> hostname1\n'
+            + 'event -> e4597efc-3811-4476-9cf5-4e9d8501037e\n'
+            + 'environment -> Production\n'
+            + 'severity -> warning\n'
+            + 'status -> PROBLEM\n'
+            + 'ack -> \n'
+            'service -> [\'group1\']\n'
+            + 'group -> Zabbix\n'
+            + 'value -> 61°\n'
+            + 'text -> PROBLEM: PSU-0.40: Temperature is above threshold\n'
+            + 'tags -> [\'tag1\', \'tag2\']\n'
+            + 'attributes.ip -> 10.1.1.1\n'
+            + 'attributes.thresholdInfo -> template: expr\n'
+            + 'attributes.moreInfo -> <a href="http://x.x.x.x/tr_events.php?triggerid=1&eventid=2">Zabbix console</a>\n'
+            + 'type -> zabbixAlert\n'
+            + 'dateTime -> 2018.01.02T13:04:30Z\n'
+            + 'Successfully sent message "PROBLEM: PSU-0.40: Temperature is above threshold" to http://localhost:8080!\n'
         )
         # self.assertEqual(
         #     result.stderr,
