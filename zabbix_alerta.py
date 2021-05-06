@@ -120,6 +120,8 @@ def cli(sendto, summary, body):
     value={ITEM.VALUE1}
     text={TRIGGER.STATUS}: {TRIGGER.NAME}
     tags={EVENT.TAGS}
+    attributes.eventId={EVENT.ID}
+    attributes.triggerId={TRIGGER.ID}
     attributes.ip={HOST.IP1}
     attributes.thresholdInfo={TRIGGER.TEMPLATE.NAME}: {TRIGGER.EXPRESSION}
     attributes.moreInfo=<a href="http://x.x.x.x/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}">Zabbix console</a>
