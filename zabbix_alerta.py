@@ -53,6 +53,8 @@ def parse_zabbix(subject, message):
                 value = value.replace('!!', '')
             else:
                 value = ZBX_SEVERITY_MAP.get(value, 'indeterminate')
+        elif macro == 'timeout':
+            value = int(value)
         elif macro == 'tags':
             value = value.split(',')
         elif macro.startswith('attributes.'):
